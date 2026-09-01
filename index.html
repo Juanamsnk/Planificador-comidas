@@ -243,6 +243,7 @@
   let weekOffset = 0;  // 0 = current week
   let selected = null; // {date, type}
   let focusDishOnOpen = false;
+  const isDemo = new URLSearchParams(window.location.search).get('demo') === '1';
 
   function pad(n){ return String(n).padStart(2,'0'); }
   function fmtDate(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
@@ -295,6 +296,12 @@
   }
 
   function loadData(){
+    if(isDemo){
+      data = {};
+      loaded = true;
+      render();
+      return;
+    }
     mealsRef.on('value', (snapshot)=>{
       data = snapshot.val() || {};
       loaded = true;
@@ -305,6 +312,7 @@
   }
 
   async function saveData(){
+    if(isDemo) return; // modo demo: no se guarda nada de verdad
     try{ await mealsRef.set(data); }
     catch(e){ showToast('No se pudo guardar. Inténtalo de nuevo.'); }
   }
@@ -383,7 +391,7 @@
     root.innerHTML = `
       <header>
         <h1>Qué comemos</h1>
-        <p>Tabla semanal de comidas y cenas. Toca una celda para añadir o editar el plato y su recordatorio — por defecto, el día antes a las 12:00.</p>
+        ${isDemo ? '<p style="background:#FBF0D9;border:1px solid var(--mustard);border-radius:8px;padding:8px 12px;font-size:0.82rem;display:inline-block;">Modo demostración: los cambios no se guardan.</p>' : '<button id="shareDemoBtn" class="btn ghost" style="padding:6px 12px;font-size:0.8rem;">Compartir enlace de demostración</button>'}
       </header>
 
       <div class="week-nav">
@@ -425,6 +433,25 @@
     document.getElementById('nextWeek').addEventListener('click', ()=>{ weekOffset++; render(); });
     const todayBtn = document.getElementById('goToday');
     if(todayBtn) todayBtn.addEventListener('click', ()=>{ weekOffset=0; render(); });
+
+    const shareDemoBtn = document.getElementById('shareDemoBtn');
+    if(shareDemoBtn){
+      shareDemoBtn.addEventListener('click', async ()=>{
+        const demoUrl = window.location.origin + window.location.pathname + '?demo=1';
+        if(navigator.share){
+          try{
+            await navigator.share({ title:'Qué comemos (demo)', url: demoUrl });
+          }catch(e){ /* usuario canceló, no hacemos nada */ }
+        } else {
+          try{
+            await navigator.clipboard.writeText(demoUrl);
+            showToast('Enlace de demostración copiado');
+          }catch(e){
+            showToast(demoUrl);
+          }
+        }
+      });
+    }
 
     document.querySelectorAll('.cell-btn').forEach(btn=>{
       btn.addEventListener('click', ()=>{
