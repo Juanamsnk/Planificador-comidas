@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Qué comemos</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600&display=swap');
+
+  :root{
+    --ink:#20261F;
+    --paper:#F6F2E9;
+    --line:#D9D2C0;
+    --mustard:#D9A441;
+    --sage:#6F8368;
+    --rust:#B85C2E;
+    --cream-card:#FFFDF8;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:transparent;}
+  body{font-family:'Work Sans', sans-serif; color:var(--ink);}
+
+  .wrap{max-width:820px; margin:0 auto; padding:28px 18px 60px;}
+
+  header h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:1.9rem;
+    margin:0 0 4px;
+    letter-spacing:-0.01em;
+  }
+  header p{
+    margin:0 0 20px;
+    font-size:0.9rem;
+    color:#5B6156;
+    max-width:56ch;
+    line-height:1.5;
+  }
+
+  .week-nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:16px;
+    gap:10px;
+  }
+  .week-nav .label{
+    font-family:'Fraunces', serif;
+    font-size:1.1rem;
+    font-weight:600;
+  }
+  .week-nav .label .yr{font-family:'Work Sans',sans-serif; font-weight:400; font-size:0.8rem; color:#8b8f81; margin-left:6px;}
+  .nav-btn{
+    background:var(--cream-card);
+    border:1px solid var(--line);
+    border-radius:8px;
+    width:36px;
+    height:36px;
+    font-size:1rem;
+    cursor:pointer;
+    color:var(--ink);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .nav-btn:hover{background:var(--paper);}
+  .nav-group{display:flex; gap:8px; align-items:center;}
+  .today-btn{
+    font-size:0.78rem;
+    background:none;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:0 10px;
+    height:36px;
+    cursor:pointer;
+    color:var(--ink);
+  }
+
+  table.grid{
+    width:100%;
+    border-collapse:collapse;
+    background:var(--cream-card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    overflow:hidden;
+    table-layout:fixed;
+  }
+  table.grid th{
+    background:#EFEAD8;
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:0.9rem;
+    padding:10px 8px;
+    border:1px solid var(--line);
+    text-align:center;
+  }
+  table.grid td{
+    border:1px solid var(--line);
+    padding:0;
+    vertical-align:top;
+    height:64px;
+  }
+  th.daycol, td.daycol{
+    background:#F6F2E9;
+    font-weight:500;
+    font-size:0.85rem;
+    text-align:left;
+    padding:10px 10px;
+    width:78px;
+  }
+  td.daycol.today{color:var(--rust); font-weight:600;}
+
+  .cell-btn{
+    width:100%;
+    height:100%;
+    border:none;
+    background:none;
+    text-align:left;
+    padding:9px 10px;
+    cursor:pointer;
+    font-family:'Work Sans', sans-serif;
+    color:var(--ink);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:2px;
+  }
+  .cell-btn:hover{background:var(--paper);}
+  .cell-btn.selected{background:#FBF0D9; box-shadow:inset 0 0 0 2px var(--mustard);}
+  .cell-dish{font-size:0.88rem; line-height:1.25;}
+  .cell-empty{font-size:0.82rem; color:#B3AF9E;}
+  .cell-meta{font-size:0.68rem; color:#8b8f81;}
+
+  .edit-panel{
+    margin-top:18px;
+    background:var(--cream-card);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:18px 20px;
+  }
+  .edit-panel h3{
+    font-family:'Fraunces', serif;
+    font-size:1rem;
+    margin:0 0 14px;
+    font-weight:600;
+  }
+  .row{display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px;}
+  .field{display:flex; flex-direction:column; gap:5px; flex:1; min-width:120px;}
+  label{font-size:0.75rem; color:#6C7266;}
+  input[type=text], input[type=date], input[type=time]{
+    font-family:'Work Sans', sans-serif;
+    font-size:0.9rem;
+    padding:8px 10px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:var(--paper);
+    color:var(--ink);
+  }
+  input:focus{outline:2px solid var(--sage); outline-offset:1px;}
+  .reminder-line{
+    font-size:0.8rem;
+    color:#6C7266;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:14px;
+  }
+  .reminder-line input[type=checkbox]{accent-color:var(--sage);}
+  .reminder-line input[type=date], .reminder-line input[type=time]{padding:6px 8px; font-size:0.8rem;}
+
+  .btn-row{display:flex; gap:10px; flex-wrap:wrap;}
+  .btn{
+    font-family:'Work Sans', sans-serif;
+    font-size:0.85rem;
+    padding:9px 14px;
+    border-radius:8px;
+    cursor:pointer;
+    border:1px solid var(--line);
+    background:var(--paper);
+    color:var(--ink);
+  }
+  .btn.primary{background:var(--ink); color:var(--paper); border-color:var(--ink);}
+  .btn.primary:hover{background:#3a4237;}
+  .btn.danger{color:var(--rust); border-color:#E3C1A8;}
+  .btn.danger:hover{background:#F7E5D8;}
+  .btn.ghost{background:none;}
+
+  .status-bar{display:flex; gap:8px; flex-wrap:wrap; margin:16px 0 0; font-size:0.78rem;}
+  .pill{
+    border:1px solid var(--line);
+    background:var(--cream-card);
+    padding:5px 11px;
+    border-radius:100px;
+    display:flex; align-items:center; gap:6px;
+  }
+  .dot{width:7px; height:7px; border-radius:50%; background:var(--sage);}
+  .dot.off{background:#C9A45C;}
+
+  .toast{
+    position:fixed; bottom:20px; left:50%;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:var(--paper);
+    padding:10px 18px; border-radius:8px; font-size:0.85rem;
+    opacity:0; transition:all 0.25s ease; pointer-events:none; z-index:50;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:560px){
+    table.grid{font-size:0.8rem;}
+    th.daycol, td.daycol{width:56px; padding:8px 6px;}
+    .cell-btn{padding:7px 6px;}
+    .cell-meta{display:none;}
+  }
+</style>
+</head>
+<body>
+<div id="root" class="wrap"></div>
+
+<script>
+(function(){
+  const root = document.getElementById('root');
+  const STORAGE_KEY = 'meal-plan:grid';
+  const DAY_NAMES = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+  const MONTHS = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+  let data = {};       // key: "YYYY-MM-DD|comida" or "|cena" -> {dish,time,reminderDate,reminderTime}
+  let loaded = false;
+  let weekOffset = 0;  // 0 = current week
+  let selected = null; // {date, type}
+
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function fmtDate(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+
+  function getMondayOfCurrentWeek(){
+    const d = new Date();
+    const day = d.getDay(); // 0=domingo
+    const diff = (day === 0 ? -6 : 1 - day);
+    d.setDate(d.getDate()+diff);
+    d.setHours(0,0,0,0);
+    return d;
+  }
+
+  function weekDates(offset){
+    const monday = getMondayOfCurrentWeek();
+    monday.setDate(monday.getDate() + offset*7);
+    const arr = [];
+    for(let i=0;i<7;i++){
+      const d = new Date(monday);
+      d.setDate(monday.getDate()+i);
+      arr.push(d);
+    }
+    return arr;
+  }
+
+  function key(dateStr, type){ return dateStr+'|'+type; }
+
+  function defaultReminder(dateStr){
+    const d = new Date(dateStr+'T00:00:00');
+    d.setDate(d.getDate()-1);
+    return { date: fmtDate(d), time: '12:00' };
+  }
+
+  function toIcsUtc(dateObj){
+    return dateObj.getUTCFullYear()+pad(dateObj.getUTCMonth()+1)+pad(dateObj.getUTCDate())
+      +'T'+pad(dateObj.getUTCHours())+pad(dateObj.getUTCMinutes())+'00Z';
+  }
+
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    if(!t) return;
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 2200);
+  }
+
+  async function loadData(){
+    try{
+      const res = await window.storage.get(STORAGE_KEY, true);
+      data = res && res.value ? JSON.parse(res.value) : {};
+    }catch(e){ data = {}; }
+    loaded = true;
+    render();
+  }
+
+  async function saveData(){
+    try{ await window.storage.set(STORAGE_KEY, JSON.stringify(data), true); }
+    catch(e){ showToast('No se pudo guardar. Inténtalo de nuevo.'); }
+  }
+
+  function downloadIcs(entry, dateStr, type){
+    const mealTime = entry.time || (type==='comida' ? '14:00' : '21:00');
+    const start = new Date(dateStr+'T'+mealTime+':00');
+    const end = new Date(start.getTime()+60*60*1000);
+    const uid = dateStr+'-'+type+'@quecomemos';
+    const now = new Date();
+    let alarmBlock = '';
+    if(entry.reminderDate && entry.reminderTime){
+      const alarmDt = new Date(entry.reminderDate+'T'+entry.reminderTime+':00');
+      alarmBlock = [
+        'BEGIN:VALARM',
+        'ACTION:DISPLAY',
+        'DESCRIPTION:Recordatorio: '+entry.dish,
+        'TRIGGER;VALUE=DATE-TIME:'+toIcsUtc(alarmDt),
+        'END:VALARM'
+      ].join('\r\n');
+    }
+    const summary = (type==='comida'?'Comida: ':'Cena: ')+entry.dish;
+    const ics = [
+      'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Que Comemos//ES','CALSCALE:GREGORIAN',
+      'BEGIN:VEVENT','UID:'+uid,'DTSTAMP:'+toIcsUtc(now),'DTSTART:'+toIcsUtc(start),
+      'DTEND:'+toIcsUtc(end),'SUMMARY:'+summary, alarmBlock, 'END:VEVENT','END:VCALENDAR'
+    ].filter(Boolean).join('\r\n');
+    const blob = new Blob([ics], {type:'text/calendar'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = (entry.dish||'comida').replace(/[^a-z0-9]+/gi,'_').toLowerCase()+'.ics';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function escapeHtml(str){
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  function render(){
+    if(!loaded){ root.innerHTML = '<div style="padding:40px;text-align:center;color:#8b8f81;">Cargando plan de comidas…</div>'; return; }
+
+    const dates = weekDates(weekOffset);
+    const todayStr = fmtDate(new Date());
+    const first = dates[0], last = dates[6];
+    const rangeLabel = first.getMonth() === last.getMonth()
+      ? `${first.getDate()} – ${last.getDate()} de ${MONTHS[first.getMonth()]}`
+      : `${first.getDate()} ${MONTHS[first.getMonth()]} – ${last.getDate()} ${MONTHS[last.getMonth()]}`;
+
+    function cellContent(dateStr, type){
+      const entry = data[key(dateStr,type)];
+      const isSel = selected && selected.date===dateStr && selected.type===type;
+      if(!entry || !entry.dish){
+        return `<button class="cell-btn ${isSel?'selected':''}" data-date="${dateStr}" data-type="${type}">
+          <span class="cell-empty">+ añadir</span>
+        </button>`;
+      }
+      const metaBits = [];
+      if(entry.reminderDate && entry.reminderTime) metaBits.push('aviso ' + entry.reminderTime);
+      return `<button class="cell-btn ${isSel?'selected':''}" data-date="${dateStr}" data-type="${type}">
+        <span class="cell-dish">${escapeHtml(entry.dish)}</span>
+        <span class="cell-meta">${metaBits.join(' · ')}</span>
+      </button>`;
+    }
+
+    root.innerHTML = `
+      <header>
+        <h1>Qué comemos</h1>
+        <p>Tabla semanal de comidas y cenas. Toca una celda para añadir o editar el plato y su recordatorio — por defecto, el día antes a las 12:00.</p>
+      </header>
+
+      <div class="week-nav">
+        <div class="nav-group">
+          <button class="nav-btn" id="prevWeek">‹</button>
+          <button class="nav-btn" id="nextWeek">›</button>
+          ${weekOffset !== 0 ? '<button class="today-btn" id="goToday">Esta semana</button>' : ''}
+        </div>
+        <div class="label">${rangeLabel} <span class="yr">${first.getFullYear()}</span></div>
+        <div style="width:80px;"></div>
+      </div>
+
+      <table class="grid">
+        <thead>
+          <tr>
+            <th class="daycol"></th>
+            <th>Comida</th>
+            <th>Cena</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${dates.map(d=>{
+            const dateStr = fmtDate(d);
+            const isToday = dateStr === todayStr;
+            return `<tr>
+              <td class="daycol ${isToday?'today':''}">${DAY_NAMES[d.getDay()===0?6:d.getDay()-1]}<br><span style="font-weight:400;font-size:0.72rem;color:#8b8f81;">${d.getDate()} ${MONTHS[d.getMonth()].slice(0,3)}</span></td>
+              <td>${cellContent(dateStr,'comida')}</td>
+              <td>${cellContent(dateStr,'cena')}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+
+      <div id="editSlot"></div>
+      <div class="toast" id="toast"></div>
+    `;
+
+    document.getElementById('prevWeek').addEventListener('click', ()=>{ weekOffset--; render(); });
+    document.getElementById('nextWeek').addEventListener('click', ()=>{ weekOffset++; render(); });
+    const todayBtn = document.getElementById('goToday');
+    if(todayBtn) todayBtn.addEventListener('click', ()=>{ weekOffset=0; render(); });
+
+    document.querySelectorAll('.cell-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const dateStr = btn.getAttribute('data-date');
+        const type = btn.getAttribute('data-type');
+        selected = {date:dateStr, type};
+        render();
+        renderEditPanel();
+      });
+    });
+
+    if(selected) renderEditPanel();
+  }
+
+  function renderEditPanel(){
+    const slot = document.getElementById('editSlot');
+    if(!slot || !selected) return;
+    const { date, type } = selected;
+    const entry = data[key(date,type)] || {};
+    const dObj = new Date(date+'T00:00:00');
+    const dayLabel = `${DAY_NAMES[dObj.getDay()===0?6:dObj.getDay()-1]} ${dObj.getDate()} de ${MONTHS[dObj.getMonth()]}`;
+    const defRem = defaultReminder(date);
+    const hasReminder = !!entry.reminderDate;
+    const remDate = entry.reminderDate || defRem.date;
+    const remTime = entry.reminderTime || defRem.time;
+
+    slot.innerHTML = `
+      <div class="edit-panel">
+        <h3>${type==='comida'?'Comida':'Cena'} · ${dayLabel}</h3>
+        <div class="row">
+          <div class="field">
+            <label for="editDish">Plato</label>
+            <input type="text" id="editDish" value="${escapeHtml(entry.dish||'')}" placeholder="Ej. Pollo al horno">
+          </div>
+        </div>
+        <div class="reminder-line">
+          <input type="checkbox" id="editRemOn" ${hasReminder?'checked':''}>
+          <label for="editRemOn" style="margin:0;">Recordatorio</label>
+          <input type="date" id="editRemDate" value="${remDate}">
+          <span>a las</span>
+          <input type="time" id="editRemTime" value="${remTime}">
+        </div>
+        <div class="btn-row">
+          <button class="btn primary" id="saveCell">Guardar</button>
+          ${entry.dish ? '<button class="btn" id="icsCell">Añadir al calendario del móvil</button>' : ''}
+          ${entry.dish ? '<button class="btn danger" id="delCell">Eliminar</button>' : ''}
+          <button class="btn ghost" id="closeCell">Cerrar</button>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('saveCell').addEventListener('click', ()=>{
+      const dish = document.getElementById('editDish').value.trim();
+      if(!dish){ showToast('Escribe el nombre del plato'); return; }
+      const remOn = document.getElementById('editRemOn').checked;
+      const rd = document.getElementById('editRemDate').value;
+      const rt = document.getElementById('editRemTime').value;
+      data[key(date,type)] = {
+        dish,
+        reminderDate: remOn ? rd : null,
+        reminderTime: remOn ? rt : null,
+        notifiedLive: false
+      };
+      saveData();
+      showToast('Guardado');
+      render();
+    });
+
+    const icsBtn = document.getElementById('icsCell');
+    if(icsBtn) icsBtn.addEventListener('click', ()=> downloadIcs(data[key(date,type)], date, type));
+
+    const delBtn = document.getElementById('delCell');
+    if(delBtn) delBtn.addEventListener('click', ()=>{
+      delete data[key(date,type)];
+      saveData();
+      selected = null;
+      render();
+    });
+
+    document.getElementById('closeCell').addEventListener('click', ()=>{
+      selected = null;
+      render();
+    });
+  }
+
+  loadData();
+})();
+</script>
+</body>
+</html>
