@@ -271,6 +271,37 @@
 
   function key(dateStr, type){ return dateStr+'|'+type; }
 
+  function currentWeekDateSet(){
+    return new Set(weekDates(weekOffset).map(fmtDate));
+  }
+
+  function randomOtherWeekDish(){
+    const excluded = currentWeekDateSet();
+    const candidates = [];
+    Object.keys(data).forEach(k=>{
+      const entry = data[k];
+      if(!entry || !entry.dish) return;
+      const dateStr = k.split('|')[0];
+      if(!excluded.has(dateStr)) candidates.push(entry.dish);
+    });
+    if(candidates.length === 0) return null;
+    return candidates[Math.floor(Math.random()*candidates.length)];
+  }
+
+  function leastRecentDish(){
+    const lastSeen = {};
+    Object.keys(data).forEach(k=>{
+      const entry = data[k];
+      if(!entry || !entry.dish) return;
+      const dateStr = k.split('|')[0];
+      if(!lastSeen[entry.dish] || dateStr > lastSeen[entry.dish]) lastSeen[entry.dish] = dateStr;
+    });
+    const dishes = Object.keys(lastSeen);
+    if(dishes.length === 0) return null;
+    dishes.sort((a,b)=> lastSeen[a].localeCompare(lastSeen[b]));
+    return dishes[0];
+  }
+
   function formatDayLabel(dateStr){
     const d = new Date(dateStr+'T00:00:00');
     return `${DAY_NAMES[d.getDay()===0?6:d.getDay()-1]} ${d.getDate()} de ${MONTHS[d.getMonth()]}`;
@@ -488,6 +519,10 @@
             <input type="text" id="editDish" value="${escapeHtml(entry.dish||'')}" placeholder="Ej. Pollo al horno">
           </div>
         </div>
+        <div class="btn-row" style="margin-bottom:14px;">
+          <button type="button" class="btn ghost" id="randomDishBtn">🎲 Plato random</button>
+          <button type="button" class="btn ghost" id="oldDishBtn">⏳ Hace tiempo que no...</button>
+        </div>
         <div class="reminder-line">
           <input type="checkbox" id="editRemOn" ${hasReminder?'checked':''}>
           <label for="editRemOn" style="margin:0;">Recordatorio</label>
@@ -518,6 +553,18 @@
         setTimeout(()=>{ dishInput.focus(); }, 250);
       }
     }
+
+    document.getElementById('randomDishBtn').addEventListener('click', ()=>{
+      const suggestion = randomOtherWeekDish();
+      if(!suggestion){ showToast('Todavía no hay suficientes platos guardados en otras semanas'); return; }
+      document.getElementById('editDish').value = suggestion;
+    });
+
+    document.getElementById('oldDishBtn').addEventListener('click', ()=>{
+      const suggestion = leastRecentDish();
+      if(!suggestion){ showToast('Todavía no hay suficiente histórico guardado'); return; }
+      document.getElementById('editDish').value = suggestion;
+    });
 
     document.getElementById('saveCell').addEventListener('click', ()=>{
       const dish = document.getElementById('editDish').value.trim();
