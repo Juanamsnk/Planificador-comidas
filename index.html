@@ -218,10 +218,23 @@
 <body>
 <div id="root" class="wrap"></div>
 
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<script>
+  firebase.initializeApp({
+    apiKey: "AIzaSyARBUlIhQ3cpXTbh-vc14tdp7OXuqQGA24",
+    authDomain: "que-comemos-146b7.firebaseapp.com",
+    databaseURL: "https://que-comemos-146b7-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "que-comemos-146b7",
+    storageBucket: "que-comemos-146b7.firebasestorage.app",
+    messagingSenderId: "556029382725",
+    appId: "1:556029382725:web:258043428881c6bcc3132c"
+  });
+  const mealsRef = firebase.database().ref('mealplan');
+</script>
 <script>
 (function(){
   const root = document.getElementById('root');
-  const STORAGE_KEY = 'meal-plan:grid';
   const DAY_NAMES = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
   const MONTHS = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 
@@ -275,17 +288,18 @@
     setTimeout(()=>t.classList.remove('show'), 2200);
   }
 
-  async function loadData(){
-    try{
-      const res = await window.storage.get(STORAGE_KEY, true);
-      data = res && res.value ? JSON.parse(res.value) : {};
-    }catch(e){ data = {}; }
-    loaded = true;
-    render();
+  function loadData(){
+    mealsRef.on('value', (snapshot)=>{
+      data = snapshot.val() || {};
+      loaded = true;
+      render();
+    }, (err)=>{
+      showToast('No se pudo conectar con la base de datos.');
+    });
   }
 
   async function saveData(){
-    try{ await window.storage.set(STORAGE_KEY, JSON.stringify(data), true); }
+    try{ await mealsRef.set(data); }
     catch(e){ showToast('No se pudo guardar. Inténtalo de nuevo.'); }
   }
 
