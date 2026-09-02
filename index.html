@@ -41,8 +41,10 @@
   .header-actions{
     display:flex;
     align-items:center;
+    justify-content:flex-end;
     gap:8px;
     margin-bottom:8px;
+    width:100%;
   }
   .menu-wrap{position:relative;}
   .menu-btn{
@@ -96,6 +98,14 @@
   .menu-item.active{background:#FBF0D9; font-weight:600;}
   .menu-item.danger{color:var(--rust);}
   .menu-item.danger:hover{background:#F7E5D8;}
+  .calendar-menu-row{display:flex;align-items:center;gap:4px;width:100%;}
+  .calendar-menu-row .menu-item{flex:1;min-width:0;}
+  .leave-menu-btn{
+    width:28px;height:28px;flex:0 0 28px;padding:0;border:0;border-radius:50%;
+    background:transparent;color:var(--rust);font-size:1.15rem;line-height:1;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;
+  }
+  .leave-menu-btn:hover{background:#F7E5D8;}
   .menu-divider{height:1px; background:var(--line); margin:6px 4px;}
 
   .week-nav{
@@ -125,7 +135,9 @@
     justify-content:center;
   }
   .nav-btn:hover{background:var(--paper);}
-  .nav-group{display:flex; gap:8px; align-items:center;}
+  .nav-group{display:flex; gap:8px; align-items:center; flex-shrink:0;}
+  .week-nav .label{flex:1; min-width:0; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .nav-spacer{width:80px; flex-shrink:0;}
   .today-btn{
     font-size:0.78rem;
     background:none;
@@ -258,6 +270,24 @@
   .dot{width:7px; height:7px; border-radius:50%; background:var(--sage);}
   .dot.off{background:#C9A45C;}
 
+  .calendar-owner-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:0.75rem;
+    font-weight:600;
+    color:var(--sage);
+    background:#EDF1EA;
+    border:1px solid #D6DECF;
+    border-radius:100px;
+    padding:4px 12px;
+    margin:0 0 12px;
+  }
+  .calendar-owner-badge.shared{
+    color:var(--rust);
+    background:#F7E5D8;
+    border-color:#E3C1A8;
+  }
   .toast{
     position:fixed; bottom:20px; left:50%;
     transform:translateX(-50%) translateY(20px);
@@ -273,6 +303,28 @@
     .cell-btn{padding:7px 6px;}
     .cell-meta{display:none;}
   }
+
+  @media (max-width:600px){
+    .wrap{padding:20px 14px 50px;}
+    header h1{font-size:1.5rem;}
+    header p{font-size:0.82rem;}
+    .calendar-owner-badge{font-size:0.68rem; padding:4px 10px; margin-bottom:10px;}
+    .header-actions{gap:6px;}
+    .menu-wrap{flex-shrink:0; margin-left:auto;}
+    .menu-btn{width:34px; height:34px; flex-shrink:0;}
+    .dropdown-menu{min-width:200px; right:0; max-width:calc(100vw - 28px);}
+    .week-nav{gap:6px;}
+    .nav-btn{width:32px; height:32px;}
+    .nav-spacer{display:none;}
+    .week-nav .label{font-size:0.98rem;}
+    .today-btn{font-size:0.72rem; padding:0 8px; height:32px;}
+    .row{gap:8px;}
+    .field{min-width:100%;}
+    .reminder-line{gap:6px;}
+    .btn-row{gap:8px;}
+    .btn{padding:8px 12px; font-size:0.82rem;}
+  }
+
 </style>
 </head>
 <body>
@@ -418,6 +470,7 @@
     calendarId = id;
     isOwner = ownerFlag;
     loaded = false;
+    if(!ownerFlag) fetchCalendarLabel(id);
     mealsRef = firebase.database().ref('calendars/'+id+'/mealplan');
     loadData();
   }
@@ -611,8 +664,13 @@
         <div class="menu-section-label">Calendarios</div>
         <button class="menu-item ${calendarId===ownCalendarId ? 'active' : ''}" data-cal-switch="${ownCalendarId}" data-cal-owner="1">Mi calendario</button>
         ${Object.keys(sharedCalendars).map(id => `
-          <button class="menu-item ${calendarId===id ? 'active' : ''}" data-cal-switch="${id}" data-cal-owner="0">${escapeHtml(calendarLabels[id] || 'Calendario compartido')}</button>
+          <div class="calendar-menu-row">
+            <button class="menu-item ${calendarId===id ? 'active' : ''}" data-cal-switch="${id}" data-cal-owner="0">${escapeHtml(calendarLabels[id] || 'Calendario compartido')}</button>
+            <button class="leave-menu-btn" data-leave-calendar="${id}" title="Quitar calendario" aria-label="Quitar calendario">×</button>
+          </div>
         `).join('')}
+        <div class="menu-divider"></div>
+        ${calendarId === ownCalendarId ? '<button class="menu-item" id="shareRealMenuBtn">Compartir enlace</button>' : ''}
         <div class="menu-divider"></div>
         <button class="menu-item" id="shareDemoBtn">Compartir enlace de demostración</button>
         <div class="menu-divider"></div>
@@ -620,20 +678,27 @@
       </div>
     ` : '';
 
+    const ownerBadgeHtml = (!isDemo && calendarId)
+      ? `<p class="calendar-owner-badge ${isOwner ? '' : 'shared'}">
+          ${isOwner ? '📁 Tu calendario' : '👥 Calendario de ' + escapeHtml(calendarLabels[calendarId] || 'otra persona')}
+
+         </p>`
+      : '';
+
     root.innerHTML = `
       <header>
         <h1>Qué comemos</h1>
+        ${ownerBadgeHtml}
         ${isDemo
           ? '<p style="background:#FBF0D9;border:1px solid var(--mustard);border-radius:8px;padding:8px 12px;font-size:0.82rem;display:inline-block;">Modo demostración: los cambios no se guardan.</p>'
           : (authUser
               ? `<div class="header-actions">
-                  <button id="shareRealBtn" class="btn ghost" style="padding:6px 12px;font-size:0.8rem;">Compartir enlace</button>
                   <div class="menu-wrap">
                     <button class="menu-btn" id="menuToggleBtn" aria-label="Menú" aria-expanded="${menuOpen ? 'true' : 'false'}">☰</button>
                     ${menuOpen ? menuHtml : ''}
                   </div>
                  </div>`
-              : '<p style="font-size:0.82rem;color:#8b8f81;">Estás viendo un calendario compartido contigo por enlace.</p>')
+              : '<p style="font-size:0.82rem;color:#8b8f81;">Estás viendo este calendario porque alguien te ha compartido su enlace.</p>')
         }
       </header>
 
@@ -644,7 +709,7 @@
           ${weekOffset !== 0 ? '<button class="today-btn" id="goToday">Esta semana</button>' : ''}
         </div>
         <div class="label">${rangeLabel} <span class="yr">${first.getFullYear()}</span></div>
-        <div style="width:80px;"></div>
+        <div class="nav-spacer"></div>
       </div>
 
       <table class="grid">
@@ -697,11 +762,13 @@
       });
     });
 
-    const shareRealBtn = document.getElementById('shareRealBtn');
-    if(shareRealBtn){
-      shareRealBtn.addEventListener('click', async ()=>{
-        // Solo se comparte el enlace del propio calendario, nunca el de uno compartido por otra persona
+    const shareRealMenuBtn = document.getElementById('shareRealMenuBtn');
+    if(shareRealMenuBtn){
+      shareRealMenuBtn.addEventListener('click', async ()=>{
+        if(calendarId !== ownCalendarId) return;
         const realUrl = window.location.origin + window.location.pathname + '?cal=' + ownCalendarId;
+        menuOpen = false;
+        render();
         if(navigator.share){
           try{ await navigator.share({ title:'Qué comemos', url: realUrl }); }
           catch(e){ /* cancelado */ }
@@ -711,6 +778,29 @@
         }
       });
     }
+
+    document.querySelectorAll('[data-leave-calendar]').forEach(btn=>{
+      btn.addEventListener('click', async (e)=>{
+        e.stopPropagation();
+        if(!authUser || !ownCalendarId) return;
+        const sharedId = btn.getAttribute('data-leave-calendar');
+        const label = calendarLabels[sharedId] || 'este calendario';
+        if(!confirm('¿Quieres dejar de tener acceso a "' + label + '"?')) return;
+        try{
+          await firebase.database().ref('users/'+ownCalendarId+'/shared/'+sharedId).remove();
+          menuOpen = false;
+          selected = null;
+          if(calendarId === sharedId){
+            loadCalendar(ownCalendarId, true);
+          } else {
+            render();
+          }
+          showToast('Has dejado el calendario compartido');
+        }catch(e){
+          showToast('No se pudo dejar el calendario');
+        }
+      });
+    });
 
     const logoutBtn = document.getElementById('logoutBtn');
     if(logoutBtn){
