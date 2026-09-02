@@ -248,9 +248,12 @@
 
   let mealsRef = null;
   let calendarId = null;
+  let ownCalendarId = null;
   let isOwner = false;
   let authUser = null;
   let authError = '';
+  let sharedCalendars = {};   // { calId: true }
+  let calendarLabels = {};    // { calId: "nombre a mostrar" }
 
   function pad(n){ return String(n).padStart(2,'0'); }
   function fmtDate(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
@@ -349,6 +352,15 @@
     catch(e){ showToast('No se pudo guardar. Inténtalo de nuevo.'); }
   }
 
+  function loadCalendar(id, ownerFlag){
+    if(mealsRef) mealsRef.off();
+    calendarId = id;
+    isOwner = ownerFlag;
+    loaded = false;
+    mealsRef = firebase.database().ref('calendars/'+id+'/mealplan');
+    loadData();
+  }
+
   async function migrateLegacyDataIfNeeded(uid){
     // La primera vez que el usuario principal se registra, si su calendario nuevo
     // está vacío y existía el calendario antiguo (compartido sin cuentas), lo copiamos.
@@ -368,21 +380,42 @@
   }
 
   function startAsGuest(cal){
-    calendarId = cal; isOwner = false;
-    mealsRef = firebase.database().ref('calendars/'+cal+'/mealplan');
-    loadData();
+    loadCalendar(cal, false);
+  }
+
+  function fetchCalendarLabel(id){
+    if(calendarLabels[id]) return;
+    firebase.database().ref('calendars/'+id+'/ownerLabel').once('value').then(snap=>{
+      calendarLabels[id] = snap.val() || 'Calendario compartido';
+      render();
+    }).catch(()=>{ calendarLabels[id] = 'Calendario compartido'; });
+  }
+
+  function listenSharedCalendars(uid){
+    firebase.database().ref('users/'+uid+'/shared').on('value', (snap)=>{
+      sharedCalendars = snap.val() || {};
+      Object.keys(sharedCalendars).forEach(fetchCalendarLabel);
+      render();
+    });
   }
 
   async function startAsOwner(uid){
-    calendarId = uid; isOwner = true;
+    ownCalendarId = uid;
     await migrateLegacyDataIfNeeded(uid);
-    mealsRef = firebase.database().ref('calendars/'+uid+'/mealplan');
-    loadData();
+    firebase.database().ref('calendars/'+uid+'/ownerLabel').set(authUser.displayName || authUser.email || 'Mi calendario');
+    listenSharedCalendars(uid);
+
+    if(urlCal && urlCal !== uid){
+      await firebase.database().ref('users/'+uid+'/shared/'+urlCal).set(true);
+      history.replaceState({}, '', window.location.pathname);
+      loadCalendar(urlCal, false);
+    } else {
+      loadCalendar(uid, true);
+    }
   }
 
   function initRouting(){
     if(isDemo){ startAsDemo(); return; }
-    if(urlCal){ startAsGuest(urlCal); return; }
     firebase.auth().getRedirectResult().catch((e)=>{
       authError = 'No se pudo iniciar sesión (' + (e.code||'error') + '). Comprueba que el dominio esté autorizado.';
     });
@@ -390,6 +423,8 @@
       if(user){
         authUser = user;
         startAsOwner(user.uid);
+      } else if(urlCal){
+        startAsGuest(urlCal);
       } else {
         authUser = null;
         loaded = true;
@@ -503,17 +538,26 @@
       </button>`;
     }
 
+    const calendarSwitcher = (authUser && ownCalendarId) ? `
+      <div class="btn-row" style="margin-top:10px;">
+        <button class="btn ${calendarId===ownCalendarId ? 'primary' : 'ghost'}" data-cal-switch="${ownCalendarId}" data-cal-owner="1">Mi calendario</button>
+        ${Object.keys(sharedCalendars).map(id => `
+          <button class="btn ${calendarId===id ? 'primary' : 'ghost'}" data-cal-switch="${id}" data-cal-owner="0">${escapeHtml(calendarLabels[id] || 'Calendario compartido')}</button>
+        `).join('')}
+      </div>` : '';
+
     root.innerHTML = `
       <header>
         <h1>Qué comemos</h1>
         ${isDemo
           ? '<p style="background:#FBF0D9;border:1px solid var(--mustard);border-radius:8px;padding:8px 12px;font-size:0.82rem;display:inline-block;">Modo demostración: los cambios no se guardan.</p>'
-          : (isOwner
+          : (authUser
               ? `<div class="btn-row">
                   <button id="shareRealBtn" class="btn ghost" style="padding:6px 12px;font-size:0.8rem;">Compartir enlace</button>
                   <button id="shareDemoBtn" class="btn ghost" style="padding:6px 12px;font-size:0.8rem;">Compartir enlace de demostración</button>
                   <button id="logoutBtn" class="btn ghost" style="padding:6px 12px;font-size:0.8rem;">Cerrar sesión</button>
-                 </div>`
+                 </div>
+                 ${calendarSwitcher}`
               : '<p style="font-size:0.82rem;color:#8b8f81;">Estás viendo un calendario compartido contigo por enlace.</p>')
         }
       </header>
@@ -558,6 +602,16 @@
     const todayBtn = document.getElementById('goToday');
     if(todayBtn) todayBtn.addEventListener('click', ()=>{ weekOffset=0; render(); });
 
+    document.querySelectorAll('[data-cal-switch]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const targetId = btn.getAttribute('data-cal-switch');
+        const isOwnerTarget = btn.getAttribute('data-cal-owner') === '1';
+        if(targetId === calendarId) return;
+        selected = null;
+        loadCalendar(targetId, isOwnerTarget);
+      });
+    });
+
     const shareRealBtn = document.getElementById('shareRealBtn');
     if(shareRealBtn){
       shareRealBtn.addEventListener('click', async ()=>{
@@ -576,6 +630,10 @@
     if(logoutBtn){
       logoutBtn.addEventListener('click', async ()=>{
         if(mealsRef) mealsRef.off();
+        if(ownCalendarId) firebase.database().ref('users/'+ownCalendarId+'/shared').off();
+        sharedCalendars = {};
+        calendarLabels = {};
+        ownCalendarId = null;
         await firebase.auth().signOut();
       });
     }
