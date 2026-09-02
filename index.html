@@ -38,6 +38,66 @@
     line-height:1.5;
   }
 
+  .header-actions{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:8px;
+  }
+  .menu-wrap{position:relative;}
+  .menu-btn{
+    background:var(--cream-card);
+    border:1px solid var(--line);
+    border-radius:8px;
+    width:36px;
+    height:36px;
+    font-size:1rem;
+    cursor:pointer;
+    color:var(--ink);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    line-height:1;
+  }
+  .menu-btn:hover{background:var(--paper);}
+  .dropdown-menu{
+    position:absolute;
+    top:44px;
+    right:0;
+    min-width:230px;
+    background:var(--cream-card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    box-shadow:0 8px 22px rgba(32,38,31,0.12);
+    padding:8px;
+    z-index:60;
+  }
+  .menu-section-label{
+    font-size:0.68rem;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    color:#8b8f81;
+    padding:6px 10px 4px;
+  }
+  .menu-item{
+    display:block;
+    width:100%;
+    text-align:left;
+    background:none;
+    border:none;
+    padding:9px 10px;
+    border-radius:8px;
+    font-size:0.85rem;
+    cursor:pointer;
+    color:var(--ink);
+    font-family:'Work Sans', sans-serif;
+  }
+  .menu-item:hover{background:var(--paper);}
+  .menu-item.active{background:#FBF0D9; font-weight:600;}
+  .menu-item.danger{color:var(--rust);}
+  .menu-item.danger:hover{background:#F7E5D8;}
+  .menu-divider{height:1px; background:var(--line); margin:6px 4px;}
+
   .week-nav{
     display:flex;
     align-items:center;
@@ -243,6 +303,7 @@
   let weekOffset = 0;  // 0 = current week
   let selected = null; // {date, type}
   let focusDishOnOpen = false;
+  let menuOpen = false;
   const isDemo = new URLSearchParams(window.location.search).get('demo') === '1';
   const urlCal = new URLSearchParams(window.location.search).get('cal');
 
@@ -506,6 +567,13 @@
     URL.revokeObjectURL(url);
   }
 
+  document.addEventListener('click', (e)=>{
+    if(menuOpen && !e.target.closest('.menu-wrap')){
+      menuOpen = false;
+      render();
+    }
+  });
+
   function escapeHtml(str){
     const d = document.createElement('div');
     d.textContent = str;
@@ -538,13 +606,19 @@
       </button>`;
     }
 
-    const calendarSwitcher = (authUser && ownCalendarId) ? `
-      <div class="btn-row" style="margin-top:10px;">
-        <button class="btn ${calendarId===ownCalendarId ? 'primary' : 'ghost'}" data-cal-switch="${ownCalendarId}" data-cal-owner="1">Mi calendario</button>
+    const menuHtml = (authUser && ownCalendarId) ? `
+      <div class="dropdown-menu" id="dropdownMenu">
+        <div class="menu-section-label">Calendarios</div>
+        <button class="menu-item ${calendarId===ownCalendarId ? 'active' : ''}" data-cal-switch="${ownCalendarId}" data-cal-owner="1">Mi calendario</button>
         ${Object.keys(sharedCalendars).map(id => `
-          <button class="btn ${calendarId===id ? 'primary' : 'ghost'}" data-cal-switch="${id}" data-cal-owner="0">${escapeHtml(calendarLabels[id] || 'Calendario compartido')}</button>
+          <button class="menu-item ${calendarId===id ? 'active' : ''}" data-cal-switch="${id}" data-cal-owner="0">${escapeHtml(calendarLabels[id] || 'Calendario compartido')}</button>
         `).join('')}
-      </div>` : '';
+        <div class="menu-divider"></div>
+        <button class="menu-item" id="shareDemoBtn">Compartir enlace de demostración</button>
+        <div class="menu-divider"></div>
+        <button class="menu-item danger" id="logoutBtn">Cerrar sesión</button>
+      </div>
+    ` : '';
 
     root.innerHTML = `
       <header>
@@ -552,12 +626,13 @@
         ${isDemo
           ? '<p style="background:#FBF0D9;border:1px solid var(--mustard);border-radius:8px;padding:8px 12px;font-size:0.82rem;display:inline-block;">Modo demostración: los cambios no se guardan.</p>'
           : (authUser
-              ? `<div class="btn-row">
+              ? `<div class="header-actions">
                   <button id="shareRealBtn" class="btn ghost" style="padding:6px 12px;font-size:0.8rem;">Compartir enlace</button>
-                  <button id="shareDemoBtn" class="btn ghost" style="padding:6px 12px;font-size:0.8rem;">Compartir enlace de demostración</button>
-                  <button id="logoutBtn" class="btn ghost" style="padding:6px 12px;font-size:0.8rem;">Cerrar sesión</button>
-                 </div>
-                 ${calendarSwitcher}`
+                  <div class="menu-wrap">
+                    <button class="menu-btn" id="menuToggleBtn" aria-label="Menú" aria-expanded="${menuOpen ? 'true' : 'false'}">☰</button>
+                    ${menuOpen ? menuHtml : ''}
+                  </div>
+                 </div>`
               : '<p style="font-size:0.82rem;color:#8b8f81;">Estás viendo un calendario compartido contigo por enlace.</p>')
         }
       </header>
@@ -602,11 +677,21 @@
     const todayBtn = document.getElementById('goToday');
     if(todayBtn) todayBtn.addEventListener('click', ()=>{ weekOffset=0; render(); });
 
+    const menuToggleBtn = document.getElementById('menuToggleBtn');
+    if(menuToggleBtn){
+      menuToggleBtn.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        menuOpen = !menuOpen;
+        render();
+      });
+    }
+
     document.querySelectorAll('[data-cal-switch]').forEach(btn=>{
       btn.addEventListener('click', ()=>{
         const targetId = btn.getAttribute('data-cal-switch');
         const isOwnerTarget = btn.getAttribute('data-cal-owner') === '1';
-        if(targetId === calendarId) return;
+        menuOpen = false;
+        if(targetId === calendarId) { render(); return; }
         selected = null;
         loadCalendar(targetId, isOwnerTarget);
       });
@@ -615,7 +700,8 @@
     const shareRealBtn = document.getElementById('shareRealBtn');
     if(shareRealBtn){
       shareRealBtn.addEventListener('click', async ()=>{
-        const realUrl = window.location.origin + window.location.pathname + '?cal=' + calendarId;
+        // Solo se comparte el enlace del propio calendario, nunca el de uno compartido por otra persona
+        const realUrl = window.location.origin + window.location.pathname + '?cal=' + ownCalendarId;
         if(navigator.share){
           try{ await navigator.share({ title:'Qué comemos', url: realUrl }); }
           catch(e){ /* cancelado */ }
@@ -629,6 +715,7 @@
     const logoutBtn = document.getElementById('logoutBtn');
     if(logoutBtn){
       logoutBtn.addEventListener('click', async ()=>{
+        menuOpen = false;
         if(mealsRef) mealsRef.off();
         if(ownCalendarId) firebase.database().ref('users/'+ownCalendarId+'/shared').off();
         sharedCalendars = {};
@@ -641,6 +728,8 @@
     const shareDemoBtn = document.getElementById('shareDemoBtn');
     if(shareDemoBtn){
       shareDemoBtn.addEventListener('click', async ()=>{
+        menuOpen = false;
+        render();
         const demoUrl = window.location.origin + window.location.pathname + '?demo=1';
         if(navigator.share){
           try{
