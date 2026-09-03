@@ -5,326 +5,217 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Qué comemos</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,500&family=Manrope:wght@400;500;600;700&display=swap');
 
   :root{
-    --ink:#20261F;
-    --paper:#F6F2E9;
-    --line:#D9D2C0;
-    --mustard:#D9A441;
-    --sage:#6F8368;
-    --rust:#B85C2E;
-    --cream-card:#FFFDF8;
+    --ink:#14171A;
+    --surface:#1D2225;
+    --surface-2:#242A2E;
+    --surface-hover:#2D343A;
+    --paper:#F1F0EA;
+    --muted:#8D949B;
+    --line: rgba(241,240,234,0.08);
+    --line-strong: rgba(241,240,234,0.18);
+    --herb:#8FC46E;
+    --herb-deep:#6FA34E;
+    --herb-ink:#12210D;
+    --gold:#E8B24D;
+    --plum:#7C93C4;
+    --rust:#E2735A;
+    --shadow: 0 20px 44px rgba(0,0,0,0.45);
   }
 
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;background:transparent;}
-  body{font-family:'Work Sans', sans-serif; color:var(--ink);}
+  body{
+    font-family:'Manrope', sans-serif;
+    color:var(--paper);
+    background:var(--ink);
+  }
 
-  .wrap{max-width:820px; margin:0 auto; padding:28px 18px 60px;}
+  .wrap{max-width:980px; margin:0 auto; padding:36px 22px 70px;}
 
-  header h1{
-    font-family:'Fraunces', serif;
-    font-weight:600;
-    font-size:1.9rem;
-    margin:0 0 4px;
+  .topbar{margin-bottom:10px;}
+  .header-row{display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap;}
+  .brand h1{
+    font-family:'Newsreader', serif;
+    font-style:italic;
+    font-weight:500;
+    font-size:2.4rem;
+    margin:0;
+    color:var(--paper);
     letter-spacing:-0.01em;
   }
-  header p{
-    margin:0 0 20px;
-    font-size:0.9rem;
-    color:#5B6156;
-    max-width:56ch;
-    line-height:1.5;
-  }
-
-  .header-actions{
-    display:flex;
-    align-items:center;
-    justify-content:flex-end;
-    gap:8px;
-    margin-bottom:8px;
-    width:100%;
-  }
-  .menu-wrap{position:relative;}
-  .menu-btn{
-    background:var(--cream-card);
-    border:1px solid var(--line);
-    border-radius:8px;
-    width:36px;
-    height:36px;
-    font-size:1rem;
-    cursor:pointer;
-    color:var(--ink);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    line-height:1;
-  }
-  .menu-btn:hover{background:var(--paper);}
-  .dropdown-menu{
-    position:absolute;
-    top:44px;
-    right:0;
-    min-width:230px;
-    background:var(--cream-card);
-    border:1px solid var(--line);
-    border-radius:10px;
-    box-shadow:0 8px 22px rgba(32,38,31,0.12);
-    padding:8px;
-    z-index:60;
-  }
-  .menu-section-label{
-    font-size:0.68rem;
-    text-transform:uppercase;
-    letter-spacing:0.04em;
-    color:#8b8f81;
-    padding:6px 10px 4px;
-  }
-  .menu-item{
-    display:block;
-    width:100%;
-    text-align:left;
-    background:none;
-    border:none;
-    padding:9px 10px;
-    border-radius:8px;
-    font-size:0.85rem;
-    cursor:pointer;
-    color:var(--ink);
-    font-family:'Work Sans', sans-serif;
-  }
-  .menu-item:hover{background:var(--paper);}
-  .menu-item.active{background:#FBF0D9; font-weight:600;}
-  .menu-item.danger{color:var(--rust);}
-  .menu-item.danger:hover{background:#F7E5D8;}
-  .calendar-menu-row{display:flex;align-items:center;gap:4px;width:100%;}
-  .calendar-menu-row .menu-item{flex:1;min-width:0;}
-  .leave-menu-btn{
-    width:28px;height:28px;flex:0 0 28px;padding:0;border:0;border-radius:50%;
-    background:transparent;color:var(--rust);font-size:1.15rem;line-height:1;
-    cursor:pointer;display:flex;align-items:center;justify-content:center;
-  }
-  .leave-menu-btn:hover{background:#F7E5D8;}
-  .menu-divider{height:1px; background:var(--line); margin:6px 4px;}
-
-  .week-nav{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin-bottom:16px;
-    gap:10px;
-  }
-  .week-nav .label{
-    font-family:'Fraunces', serif;
-    font-size:1.1rem;
-    font-weight:600;
-  }
-  .week-nav .label .yr{font-family:'Work Sans',sans-serif; font-weight:400; font-size:0.8rem; color:#8b8f81; margin-left:6px;}
-  .nav-btn{
-    background:var(--cream-card);
-    border:1px solid var(--line);
-    border-radius:8px;
-    width:36px;
-    height:36px;
-    font-size:1rem;
-    cursor:pointer;
-    color:var(--ink);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-  }
-  .nav-btn:hover{background:var(--paper);}
-  .nav-group{display:flex; gap:8px; align-items:center; flex-shrink:0;}
-  .week-nav .label{flex:1; min-width:0; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  .nav-spacer{width:80px; flex-shrink:0;}
-  .today-btn{
-    font-size:0.78rem;
-    background:none;
-    border:1px solid var(--line);
-    border-radius:8px;
-    padding:0 10px;
-    height:36px;
-    cursor:pointer;
-    color:var(--ink);
-  }
-
-  table.grid{
-    width:100%;
-    border-collapse:collapse;
-    background:var(--cream-card);
-    border:1px solid var(--line);
-    border-radius:10px;
-    overflow:hidden;
-    table-layout:fixed;
-  }
-  table.grid th{
-    background:#EFEAD8;
-    font-family:'Fraunces', serif;
-    font-weight:600;
-    font-size:0.9rem;
-    padding:10px 8px;
-    border:1px solid var(--line);
-    text-align:center;
-  }
-  table.grid td{
-    border:1px solid var(--line);
-    padding:0;
-    vertical-align:top;
-    height:64px;
-  }
-  th.daycol, td.daycol{
-    background:#F6F2E9;
-    font-weight:500;
-    font-size:0.85rem;
-    text-align:left;
-    padding:10px 10px;
-    width:78px;
-  }
-  td.daycol.today{color:var(--rust); font-weight:600;}
-
-  .cell-btn{
-    width:100%;
-    height:100%;
-    border:none;
-    background:none;
-    text-align:left;
-    padding:9px 10px;
-    cursor:pointer;
-    font-family:'Work Sans', sans-serif;
-    color:var(--ink);
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    gap:2px;
-  }
-  .cell-btn:hover{background:var(--paper);}
-  .cell-btn.selected{background:#FBF0D9; box-shadow:inset 0 0 0 2px var(--mustard);}
-  .cell-dish{font-size:0.88rem; line-height:1.25;}
-  .cell-empty{font-size:0.82rem; color:#B3AF9E;}
-  .cell-meta{font-size:0.68rem; color:#8b8f81;}
-
-  .edit-panel{
-    margin-top:18px;
-    background:var(--cream-card);
-    border:1px solid var(--line);
-    border-radius:12px;
-    padding:18px 20px;
-  }
-  .edit-panel h3{
-    font-family:'Fraunces', serif;
-    font-size:1rem;
-    margin:0 0 14px;
-    font-weight:600;
-  }
-  .row{display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px;}
-  .field{display:flex; flex-direction:column; gap:5px; flex:1; min-width:120px;}
-  label{font-size:0.75rem; color:#6C7266;}
-  input[type=text], input[type=password], input[type=date], input[type=time]{
-    font-family:'Work Sans', sans-serif;
-    font-size:0.9rem;
-    padding:8px 10px;
-    border:1px solid var(--line);
-    border-radius:8px;
-    background:var(--paper);
-    color:var(--ink);
-  }
-  input:focus{outline:2px solid var(--sage); outline-offset:1px;}
-  .reminder-line{
-    font-size:0.8rem;
-    color:#6C7266;
-    display:flex;
-    align-items:center;
-    gap:8px;
-    flex-wrap:wrap;
-    margin-bottom:14px;
-  }
-  .reminder-line input[type=checkbox]{accent-color:var(--sage);}
-  .reminder-line input[type=date], .reminder-line input[type=time]{padding:6px 8px; font-size:0.8rem;}
-
-  .btn-row{display:flex; gap:10px; flex-wrap:wrap;}
-  .btn{
-    font-family:'Work Sans', sans-serif;
-    font-size:0.85rem;
-    padding:9px 14px;
-    border-radius:8px;
-    cursor:pointer;
-    border:1px solid var(--line);
-    background:var(--paper);
-    color:var(--ink);
-  }
-  .btn.primary{background:var(--ink); color:var(--paper); border-color:var(--ink);}
-  .btn.primary:hover{background:#3a4237;}
-  .btn.danger{color:var(--rust); border-color:#E3C1A8;}
-  .btn.danger:hover{background:#F7E5D8;}
-  .btn.ghost{background:none;}
-
-  .status-bar{display:flex; gap:8px; flex-wrap:wrap; margin:16px 0 0; font-size:0.78rem;}
-  .pill{
-    border:1px solid var(--line);
-    background:var(--cream-card);
-    padding:5px 11px;
-    border-radius:100px;
-    display:flex; align-items:center; gap:6px;
-  }
-  .dot{width:7px; height:7px; border-radius:50%; background:var(--sage);}
-  .dot.off{background:#C9A45C;}
 
   .calendar-owner-badge{
-    display:inline-flex;
-    align-items:center;
-    gap:6px;
-    font-size:0.75rem;
-    font-weight:600;
-    color:var(--sage);
-    background:#EDF1EA;
-    border:1px solid #D6DECF;
-    border-radius:100px;
-    padding:4px 12px;
-    margin:0 0 12px;
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:0.75rem; font-weight:600;
+    color:var(--herb); background:rgba(143,196,110,0.12);
+    border:1px solid rgba(143,196,110,0.35);
+    border-radius:100px; padding:5px 13px; margin:14px 0 0;
   }
-  .calendar-owner-badge.shared{
-    color:var(--rust);
-    background:#F7E5D8;
-    border-color:#E3C1A8;
-  }
-  .toast{
-    position:fixed; bottom:20px; left:50%;
-    transform:translateX(-50%) translateY(20px);
-    background:var(--ink); color:var(--paper);
-    padding:10px 18px; border-radius:8px; font-size:0.85rem;
-    opacity:0; transition:all 0.25s ease; pointer-events:none; z-index:50;
-  }
-  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  .calendar-owner-badge.shared{ color:var(--plum); background:rgba(124,147,196,0.14); border-color:rgba(124,147,196,0.4); }
 
-  @media (max-width:560px){
-    table.grid{font-size:0.8rem;}
-    th.daycol, td.daycol{width:56px; padding:8px 6px;}
-    .cell-btn{padding:7px 6px;}
-    .cell-meta{display:none;}
+  .demo-badge{
+    background:rgba(232,178,77,0.14); border:1px solid rgba(232,178,77,0.4);
+    color:var(--gold); border-radius:100px; padding:7px 15px; font-size:0.8rem;
+    display:inline-block; margin-top:14px;
   }
+  .guest-note{font-size:0.82rem; color:var(--muted); margin-top:14px;}
+
+  .menu-wrap{position:relative; flex-shrink:0;}
+  .menu-btn{
+    width:40px;height:40px;border-radius:12px;
+    background:var(--surface); border:1px solid var(--line-strong);
+    color:var(--paper); font-size:1.05rem; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .menu-btn:hover{background:var(--surface-hover);}
+  .dropdown-menu{
+    position:absolute; top:48px; right:0; min-width:240px;
+    background:var(--surface); border:1px solid var(--line-strong);
+    border-radius:14px; box-shadow:var(--shadow); padding:10px; z-index:60;
+  }
+  .menu-section-label{font-size:0.68rem; letter-spacing:0.04em; color:var(--muted); padding:6px 10px 4px;}
+  .menu-item{
+    display:block; width:100%; text-align:left; background:none; border:none;
+    padding:10px 11px; border-radius:9px; font-size:0.87rem; cursor:pointer;
+    color:var(--paper); font-family:'Manrope', sans-serif;
+  }
+  .menu-item:hover{background:var(--surface-hover);}
+  .menu-item.active{background:rgba(143,196,110,0.16); color:var(--herb); font-weight:700;}
+  .menu-item.danger{color:#E2735A;}
+  .menu-item.danger:hover{background:rgba(226,115,90,0.15);}
+  .calendar-menu-row{display:flex; align-items:center; gap:4px;}
+  .calendar-menu-row .menu-item{flex:1; min-width:0;}
+  .leave-menu-btn{
+    width:28px;height:28px;flex:0 0 28px;border:0;border-radius:50%;
+    background:transparent;color:#E2735A;font-size:1.1rem;line-height:1;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;
+  }
+  .leave-menu-btn:hover{background:rgba(226,115,90,0.15);}
+  .menu-divider{height:1px; background:var(--line-strong); margin:7px 4px;}
+
+  .week-nav{
+    display:flex; align-items:center; justify-content:space-between;
+    margin:26px 0 18px; gap:10px;
+  }
+  .nav-group{display:flex; gap:8px; align-items:center; flex-shrink:0;}
+  .nav-btn{
+    width:38px;height:38px;border-radius:10px;
+    background:var(--surface); border:1px solid var(--line-strong);
+    color:var(--paper); font-size:1.05rem; cursor:pointer;
+  }
+  .nav-btn:hover{background:var(--surface-hover);}
+  .today-btn{
+    font-size:0.78rem; background:none; border:1px solid var(--line-strong);
+    border-radius:10px; padding:0 12px; height:38px; cursor:pointer; color:var(--paper);
+  }
+  .today-btn:hover{background:var(--surface-hover);}
+  .week-nav .label{
+    flex:1; text-align:center; font-family:'Newsreader', serif; font-size:1.25rem;
+    font-weight:500; color:var(--paper); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .week-nav .label .yr{font-family:'Manrope',sans-serif; font-weight:400; font-size:0.78rem; color:var(--muted); margin-left:6px;}
+  .nav-spacer{width:80px; flex-shrink:0;}
+
+  .week-grid{
+    display:grid; grid-template-columns:repeat(7,1fr); gap:10px;
+  }
+  .day-card{
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:16px; padding:12px 10px 14px; display:flex; flex-direction:column; gap:10px;
+    min-width:0;
+  }
+  .day-card.is-today{ border-color:var(--herb); box-shadow:0 0 0 1px var(--herb) inset; }
+  .day-card-head{ text-align:center; padding-bottom:8px; border-bottom:1px solid var(--line); }
+  .day-name{ display:block; font-size:0.7rem; letter-spacing:0.03em; color:var(--muted); }
+  .day-card.is-today .day-name{ color:var(--herb); }
+  .day-num{ display:block; font-family:'Newsreader', serif; font-size:1.2rem; color:var(--paper); margin-top:1px; }
+
+  .meal-slot{ display:flex; flex-direction:column; gap:5px; }
+  .meal-tag{
+    font-size:0.62rem; letter-spacing:0.03em; font-weight:600;
+    display:inline-flex; align-items:center; gap:5px; color:var(--muted);
+  }
+  .meal-tag::before{ content:''; width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+  .meal-slot--comida .meal-tag::before{ background:var(--gold); }
+  .meal-slot--cena .meal-tag::before{ background:var(--plum); }
+
+  .cell-btn{
+    width:100%; min-height:54px; border:1px dashed var(--line-strong); border-radius:10px;
+    background:var(--surface-2); text-align:left; padding:8px 9px; cursor:pointer;
+    font-family:'Manrope', sans-serif; color:var(--paper);
+    display:flex; flex-direction:column; justify-content:center; gap:2px;
+  }
+  .cell-btn:hover{ background:var(--surface-hover); border-color:var(--herb); }
+  .cell-btn.selected{ border:1px solid var(--herb); background:rgba(143,196,110,0.14); }
+  .cell-dish{ font-size:0.85rem; line-height:1.25; }
+  .cell-empty{ font-size:0.78rem; color:var(--muted); }
+  .cell-meta{ font-size:0.64rem; color:var(--muted); }
+
+  .edit-panel{
+    margin-top:24px; background:var(--surface); border:1px solid var(--line-strong);
+    border-radius:16px; padding:22px 24px;
+  }
+  .edit-panel h3{ font-family:'Newsreader', serif; font-size:1.2rem; font-weight:500; margin:0 0 16px; color:var(--paper); }
+
+  .row{ display:flex; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+  .field{ display:flex; flex-direction:column; gap:6px; flex:1; min-width:140px; }
+  label{ font-size:0.74rem; color:var(--muted); }
+  input[type=text], input[type=password], input[type=date], input[type=time]{
+    font-family:'Manrope', sans-serif; font-size:0.9rem; padding:10px 12px;
+    border:1px solid var(--line-strong); border-radius:10px;
+    background:var(--ink); color:var(--paper);
+  }
+  input::placeholder{ color:#736A5C; }
+  input:focus{ outline:2px solid var(--herb); outline-offset:1px; }
+
+  .reminder-line{
+    font-size:0.8rem; color:var(--muted); display:flex; align-items:center; gap:8px;
+    flex-wrap:wrap; margin-bottom:16px;
+  }
+  .reminder-line input[type=checkbox]{ accent-color:var(--herb); width:16px; height:16px; }
+  .reminder-line input[type=date], .reminder-line input[type=time]{ padding:7px 9px; font-size:0.8rem; }
+
+  .btn-row{ display:flex; gap:10px; flex-wrap:wrap; }
+  .btn{
+    font-family:'Manrope', sans-serif; font-size:0.85rem; font-weight:600;
+    padding:10px 16px; border-radius:10px; cursor:pointer;
+    border:1px solid var(--line-strong); background:var(--surface-2); color:var(--paper);
+  }
+  .btn:hover{ background:var(--surface-hover); }
+  .btn.primary{ background:var(--herb); color:var(--herb-ink); border-color:var(--herb); }
+  .btn.primary:hover{ background:var(--herb-deep); }
+  .btn.danger{ color:#E2735A; border-color:rgba(226,115,90,0.4); }
+  .btn.danger:hover{ background:rgba(226,115,90,0.15); }
+  .btn.ghost{ background:none; }
+
+  .toast{
+    position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--paper); color:var(--ink); padding:11px 20px; border-radius:10px;
+    font-size:0.85rem; font-weight:600; opacity:0; transition:all 0.25s ease; pointer-events:none; z-index:50;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
 
   @media (max-width:600px){
-    .wrap{padding:20px 14px 50px;}
-    header h1{font-size:1.5rem;}
-    header p{font-size:0.82rem;}
-    .calendar-owner-badge{font-size:0.68rem; padding:4px 10px; margin-bottom:10px;}
-    .header-actions{gap:6px;}
-    .menu-wrap{flex-shrink:0; margin-left:auto;}
-    .menu-btn{width:34px; height:34px; flex-shrink:0;}
-    .dropdown-menu{min-width:200px; right:0; max-width:calc(100vw - 28px);}
-    .week-nav{gap:6px;}
-    .nav-btn{width:32px; height:32px;}
-    .nav-spacer{display:none;}
-    .week-nav .label{font-size:0.98rem;}
-    .today-btn{font-size:0.72rem; padding:0 8px; height:32px;}
-    .row{gap:8px;}
-    .field{min-width:100%;}
-    .reminder-line{gap:6px;}
-    .btn-row{gap:8px;}
-    .btn{padding:8px 12px; font-size:0.82rem;}
+    .wrap{ padding:24px 16px 56px; }
+    .brand h1{ font-size:1.9rem; }
+    .week-grid{
+      display:flex; overflow-x:auto; scroll-snap-type:x mandatory; gap:10px; padding-bottom:6px;
+      -webkit-overflow-scrolling:touch;
+    }
+    .day-card{ flex:0 0 76%; scroll-snap-align:start; }
+    .dropdown-menu{ min-width:210px; max-width:calc(100vw - 32px); }
+    .week-nav{ gap:6px; }
+    .nav-btn{ width:34px; height:34px; }
+    .nav-spacer{ display:none; }
+    .week-nav .label{ font-size:1.05rem; }
+    .today-btn{ font-size:0.72rem; padding:0 8px; height:34px; }
+    .row{ gap:8px; }
+    .field{ min-width:100%; }
+    .btn{ padding:9px 13px; font-size:0.82rem; }
   }
-
 </style>
 </head>
 <body>
@@ -549,11 +440,13 @@
 
   function renderAuthScreen(){
     root.innerHTML = `
-      <header><h1>Qué comemos</h1></header>
-      <div class="edit-panel" style="max-width:380px; margin:20px auto 0; text-align:center;">
+      <header class="topbar">
+        <div class="brand"><h1>Qué comemos</h1></div>
+      </header>
+      <div class="edit-panel" style="max-width:400px; margin:30px auto 0; text-align:center;">
         <h3>Accede a tu calendario</h3>
-        <p style="font-size:0.85rem; color:#6C7266; margin-bottom:16px;">Inicia sesión con tu cuenta de Google para crear o entrar en tu calendario de comidas.</p>
-        ${authError ? `<p style="color:var(--rust); font-size:0.82rem; margin:0 0 12px;">${escapeHtml(authError)}</p>` : ''}
+        <p style="font-size:0.85rem; color:var(--muted); margin-bottom:18px;">Inicia sesión con tu cuenta de Google para crear o entrar en tu calendario de comidas.</p>
+        ${authError ? `<p style="color:#E2735A; font-size:0.82rem; margin:0 0 14px;">${escapeHtml(authError)}</p>` : ''}
         <div class="btn-row" style="justify-content:center;">
           <button class="btn primary" id="googleLoginBtn">Iniciar sesión con Google</button>
         </div>
@@ -634,7 +527,7 @@
   }
 
   function render(){
-    if(!loaded){ root.innerHTML = '<div style="padding:40px;text-align:center;color:#8b8f81;">Cargando plan de comidas…</div>'; return; }
+    if(!loaded){ root.innerHTML = '<div style="padding:60px 20px;text-align:center;color:var(--muted);">Cargando plan de comidas…</div>'; return; }
 
     const dates = weekDates(weekOffset);
     const todayStr = fmtDate(new Date());
@@ -680,25 +573,24 @@
 
     const ownerBadgeHtml = (!isDemo && calendarId)
       ? `<p class="calendar-owner-badge ${isOwner ? '' : 'shared'}">
-          ${isOwner ? '📁 Tu calendario' : '👥 Calendario de ' + escapeHtml(calendarLabels[calendarId] || 'otra persona')}
-
+          ${isOwner ? 'Tu calendario' : 'Calendario de ' + escapeHtml(calendarLabels[calendarId] || 'otra persona')}
          </p>`
       : '';
 
     root.innerHTML = `
-      <header>
-        <h1>Qué comemos</h1>
+      <header class="topbar">
+        <div class="header-row">
+          <div class="brand"><h1>Qué comemos</h1></div>
+          ${(!isDemo && authUser) ? `
+            <div class="menu-wrap">
+              <button class="menu-btn" id="menuToggleBtn" aria-label="Menú" aria-expanded="${menuOpen ? 'true' : 'false'}">☰</button>
+              ${menuOpen ? menuHtml : ''}
+            </div>` : ''}
+        </div>
         ${ownerBadgeHtml}
         ${isDemo
-          ? '<p style="background:#FBF0D9;border:1px solid var(--mustard);border-radius:8px;padding:8px 12px;font-size:0.82rem;display:inline-block;">Modo demostración: los cambios no se guardan.</p>'
-          : (authUser
-              ? `<div class="header-actions">
-                  <div class="menu-wrap">
-                    <button class="menu-btn" id="menuToggleBtn" aria-label="Menú" aria-expanded="${menuOpen ? 'true' : 'false'}">☰</button>
-                    ${menuOpen ? menuHtml : ''}
-                  </div>
-                 </div>`
-              : '<p style="font-size:0.82rem;color:#8b8f81;">Estás viendo este calendario porque alguien te ha compartido su enlace.</p>')
+          ? '<p class="demo-badge">Modo demostración: los cambios no se guardan.</p>'
+          : (!authUser ? '<p class="guest-note">Estás viendo este calendario porque alguien te ha compartido su enlace.</p>' : '')
         }
       </header>
 
@@ -712,26 +604,26 @@
         <div class="nav-spacer"></div>
       </div>
 
-      <table class="grid">
-        <thead>
-          <tr>
-            <th class="daycol"></th>
-            <th>Comida</th>
-            <th>Cena</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${dates.map(d=>{
-            const dateStr = fmtDate(d);
-            const isToday = dateStr === todayStr;
-            return `<tr>
-              <td class="daycol ${isToday?'today':''}">${DAY_NAMES[d.getDay()===0?6:d.getDay()-1]}<br><span style="font-weight:400;font-size:0.72rem;color:#8b8f81;">${d.getDate()} ${MONTHS[d.getMonth()].slice(0,3)}</span></td>
-              <td>${cellContent(dateStr,'comida')}</td>
-              <td>${cellContent(dateStr,'cena')}</td>
-            </tr>`;
-          }).join('')}
-        </tbody>
-      </table>
+      <div class="week-grid">
+        ${dates.map(d=>{
+          const dateStr = fmtDate(d);
+          const isToday = dateStr === todayStr;
+          return `<div class="day-card ${isToday?'is-today':''}">
+            <div class="day-card-head">
+              <span class="day-name">${DAY_NAMES[d.getDay()===0?6:d.getDay()-1]}</span>
+              <span class="day-num">${d.getDate()} ${MONTHS[d.getMonth()].slice(0,3)}</span>
+            </div>
+            <div class="meal-slot meal-slot--comida">
+              <span class="meal-tag">Comida</span>
+              ${cellContent(dateStr,'comida')}
+            </div>
+            <div class="meal-slot meal-slot--cena">
+              <span class="meal-tag">Cena</span>
+              ${cellContent(dateStr,'cena')}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
 
       <div id="editSlot"></div>
       <div class="toast" id="toast"></div>
@@ -890,7 +782,6 @@
         </div>
         <div class="btn-row">
           <button class="btn primary" id="saveCell">Guardar</button>
-          ${entry.dish ? '<button class="btn" id="icsCell">Añadir al calendario del móvil</button>' : ''}
           ${entry.dish ? '<button class="btn danger" id="delCell">Eliminar</button>' : ''}
           <button class="btn ghost" id="closeCell">Cerrar</button>
         </div>
@@ -925,20 +816,23 @@
       const rd = document.getElementById('editRemDate').value;
       const rt = document.getElementById('editRemTime').value;
       const remTitle = document.getElementById('editRemTitle').value.trim();
-      data[key(date,type)] = {
+      const savedEntry = {
         dish,
         reminderDate: remOn ? rd : null,
         reminderTime: remOn ? rt : null,
         reminderTitle: remOn ? remTitle : null,
         notifiedLive: false
       };
+      data[key(date,type)] = savedEntry;
       saveData();
-      showToast('Guardado');
+      if(remOn){
+        downloadIcs(savedEntry, date, type);
+        showToast('Guardado y recordatorio descargado');
+      } else {
+        showToast('Guardado');
+      }
       render();
     });
-
-    const icsBtn = document.getElementById('icsCell');
-    if(icsBtn) icsBtn.addEventListener('click', ()=> downloadIcs(data[key(date,type)], date, type));
 
     const delBtn = document.getElementById('delCell');
     if(delBtn) delBtn.addEventListener('click', ()=>{
