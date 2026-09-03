@@ -133,6 +133,8 @@
   .day-card.is-today .day-name{ color:var(--herb); }
   .day-num{ display:block; font-family:'Newsreader', serif; font-size:1.2rem; color:var(--paper); margin-top:1px; }
 
+  .day-meals{ display:flex; flex-direction:column; gap:10px; }
+
   .meal-slot{ display:flex; flex-direction:column; gap:5px; }
   .meal-tag{
     font-size:0.62rem; letter-spacing:0.03em; font-weight:600;
@@ -202,10 +204,16 @@
     .wrap{ padding:24px 16px 56px; }
     .brand h1{ font-size:1.9rem; }
     .week-grid{
-      display:flex; overflow-x:auto; scroll-snap-type:x mandatory; gap:10px; padding-bottom:6px;
-      -webkit-overflow-scrolling:touch;
+      display:flex; flex-direction:column; gap:10px;
     }
-    .day-card{ flex:0 0 76%; scroll-snap-align:start; }
+    .day-card{
+      flex-direction:row; align-items:stretch; gap:12px; padding:12px;
+    }
+    .day-card-head{
+      flex:0 0 58px; border-bottom:none; border-right:1px solid var(--line);
+      padding:0 12px 0 0; display:flex; flex-direction:column; justify-content:center; text-align:left;
+    }
+    .day-meals{ flex:1; min-width:0; }
     .dropdown-menu{ min-width:210px; max-width:calc(100vw - 32px); }
     .week-nav{ gap:6px; }
     .nav-btn{ width:34px; height:34px; }
@@ -247,6 +255,7 @@
   let selected = null; // {date, type}
   let focusDishOnOpen = false;
   let menuOpen = false;
+  let didAutoScrollToday = false;
   const isDemo = new URLSearchParams(window.location.search).get('demo') === '1';
   const urlCal = new URLSearchParams(window.location.search).get('cal');
 
@@ -613,13 +622,15 @@
               <span class="day-name">${DAY_NAMES[d.getDay()===0?6:d.getDay()-1]}</span>
               <span class="day-num">${d.getDate()} ${MONTHS[d.getMonth()].slice(0,3)}</span>
             </div>
-            <div class="meal-slot meal-slot--comida">
-              <span class="meal-tag">Comida</span>
-              ${cellContent(dateStr,'comida')}
-            </div>
-            <div class="meal-slot meal-slot--cena">
-              <span class="meal-tag">Cena</span>
-              ${cellContent(dateStr,'cena')}
+            <div class="day-meals">
+              <div class="meal-slot meal-slot--comida">
+                <span class="meal-tag">Comida</span>
+                ${cellContent(dateStr,'comida')}
+              </div>
+              <div class="meal-slot meal-slot--cena">
+                <span class="meal-tag">Cena</span>
+                ${cellContent(dateStr,'cena')}
+              </div>
             </div>
           </div>`;
         }).join('')}
@@ -740,6 +751,14 @@
     });
 
     if(selected) renderEditPanel();
+
+    if(!didAutoScrollToday && weekOffset === 0){
+      didAutoScrollToday = true;
+      const todayCard = document.querySelector('.day-card.is-today');
+      if(todayCard){
+        setTimeout(()=>{ todayCard.scrollIntoView({behavior:'smooth', block:'center', inline:'center'}); }, 150);
+      }
+    }
   }
 
   function renderEditPanel(){
