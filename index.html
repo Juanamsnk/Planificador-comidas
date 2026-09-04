@@ -25,9 +25,29 @@
     --shadow: 0 20px 44px rgba(0,0,0,0.45);
   }
 
+  body.theme-light{
+    --ink:#FFFFFF;
+    --surface:#FFFFFF;
+    --surface-2:#F1F3EE;
+    --surface-hover:#E7EAE1;
+    --paper:#20241F;
+    --muted:#6B7267;
+    --line: rgba(20,23,20,0.08);
+    --line-strong: rgba(20,23,20,0.16);
+    --herb:#5FA23B;
+    --herb-deep:#4A8A2C;
+    --herb-ink:#FFFFFF;
+    --gold:#B9791E;
+    --plum:#5D6FA0;
+    --rust:#C1502F;
+    --shadow: 0 16px 34px rgba(20,23,20,0.12);
+  }
+
   *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;background:transparent;}
+  html,body{margin:0;padding:0;}
   body{
+    background:var(--ink);
+    transition:background 0.2s ease;
     font-family:'Manrope', sans-serif;
     color:var(--paper);
     background:var(--ink);
@@ -246,6 +266,23 @@
 <script>
 (function(){
   const root = document.getElementById('root');
+
+  function applyStoredTheme(){
+    let saved = 'dark';
+    try{ saved = localStorage.getItem('qc-theme') || 'dark'; }catch(e){}
+    document.body.classList.toggle('theme-light', saved === 'light');
+  }
+  applyStoredTheme();
+
+  function wireThemeToggle(){
+    const btn = document.getElementById('themeToggleBtn');
+    if(!btn) return;
+    btn.addEventListener('click', ()=>{
+      const isLight = document.body.classList.toggle('theme-light');
+      try{ localStorage.setItem('qc-theme', isLight ? 'light' : 'dark'); }catch(e){}
+      btn.textContent = isLight ? '☀️' : '🌙';
+    });
+  }
   const DAY_NAMES = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
   const MONTHS = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 
@@ -448,9 +485,13 @@
   }
 
   function renderAuthScreen(){
+    const currentThemeIcon = document.body.classList.contains('theme-light') ? '☀️' : '🌙';
     root.innerHTML = `
       <header class="topbar">
-        <div class="brand"><h1>Qué comemos</h1></div>
+        <div class="header-row">
+          <div class="brand"><h1>Qué comemos</h1></div>
+          <button class="menu-btn" id="themeToggleBtn" aria-label="Cambiar tema" title="Modo claro/oscuro">${currentThemeIcon}</button>
+        </div>
       </header>
       <div class="edit-panel" style="max-width:400px; margin:30px auto 0; text-align:center;">
         <h3>Accede a tu calendario</h3>
@@ -462,6 +503,8 @@
       </div>
       <div class="toast" id="toast"></div>
     `;
+
+    wireThemeToggle();
 
     document.getElementById('googleLoginBtn').addEventListener('click', async ()=>{
       const provider = new firebase.auth.GoogleAuthProvider();
@@ -590,11 +633,14 @@
       <header class="topbar">
         <div class="header-row">
           <div class="brand"><h1>Qué comemos</h1></div>
-          ${(!isDemo && authUser) ? `
-            <div class="menu-wrap">
-              <button class="menu-btn" id="menuToggleBtn" aria-label="Menú" aria-expanded="${menuOpen ? 'true' : 'false'}">☰</button>
-              ${menuOpen ? menuHtml : ''}
-            </div>` : ''}
+          <div class="btn-row" style="gap:8px;">
+            <button class="menu-btn" id="themeToggleBtn" aria-label="Cambiar tema" title="Modo claro/oscuro">${document.body.classList.contains('theme-light') ? '☀️' : '🌙'}</button>
+            ${(!isDemo && authUser) ? `
+              <div class="menu-wrap">
+                <button class="menu-btn" id="menuToggleBtn" aria-label="Menú" aria-expanded="${menuOpen ? 'true' : 'false'}">☰</button>
+                ${menuOpen ? menuHtml : ''}
+              </div>` : ''}
+          </div>
         </div>
         ${ownerBadgeHtml}
         ${isDemo
@@ -644,6 +690,8 @@
     document.getElementById('nextWeek').addEventListener('click', ()=>{ weekOffset++; render(); });
     const todayBtn = document.getElementById('goToday');
     if(todayBtn) todayBtn.addEventListener('click', ()=>{ weekOffset=0; render(); });
+
+    wireThemeToggle();
 
     const menuToggleBtn = document.getElementById('menuToggleBtn');
     if(menuToggleBtn){
