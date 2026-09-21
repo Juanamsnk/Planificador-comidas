@@ -296,6 +296,25 @@
   const isDemo = new URLSearchParams(window.location.search).get('demo') === '1';
   const urlCal = new URLSearchParams(window.location.search).get('cal');
 
+  // Si alguien abre un enlace compartido sin sesión, recordamos el calendario
+  // durante un rato para abrirlo justo después de iniciar sesión (aunque el login
+  // recargue la página).
+  const PENDING_KEY = 'qc-pending-cal';
+  const PENDING_MAX_AGE = 30 * 60 * 1000; // 30 min
+  function rememberPendingCal(id){
+    try{ localStorage.setItem(PENDING_KEY, JSON.stringify({ id, ts: Date.now() })); }catch(e){}
+  }
+  function takePendingCal(){
+    try{
+      const raw = localStorage.getItem(PENDING_KEY);
+      localStorage.removeItem(PENDING_KEY);
+      if(!raw) return null;
+      const p = JSON.parse(raw);
+      return (p && p.id && Date.now() - p.ts < PENDING_MAX_AGE) ? p.id : null;
+    }catch(e){ return null; }
+  }
+  if(urlCal && !isDemo) rememberPendingCal(urlCal);
+
   let mealsRef = null;
   let calendarId = null;
   let ownCalendarId = null;
@@ -430,10 +449,6 @@
     data = {}; loaded = true; render();
   }
 
-  function startAsGuest(cal){
-    loadCalendar(cal, false);
-  }
-
   function fetchCalendarLabel(id){
     if(calendarLabels[id]) return;
     firebase.database().ref('calendars/'+id+'/ownerLabel').once('value').then(snap=>{
@@ -456,11 +471,15 @@
     firebase.database().ref('calendars/'+uid+'/ownerLabel').set(authUser.displayName || authUser.email || 'Mi calendario');
     listenSharedCalendars(uid);
 
-    if(urlCal && urlCal !== uid){
-      await firebase.database().ref('users/'+uid+'/shared/'+urlCal).set(true);
+    const pendingCal = takePendingCal();
+    const targetCal = urlCal || pendingCal;
+
+    if(targetCal && targetCal !== uid){
+      await firebase.database().ref('users/'+uid+'/shared/'+targetCal).set(true);
       history.replaceState({}, '', window.location.pathname);
-      loadCalendar(urlCal, false);
+      loadCalendar(targetCal, false);
     } else {
+      if(urlCal) history.replaceState({}, '', window.location.pathname);
       loadCalendar(uid, true);
     }
   }
@@ -474,8 +493,6 @@
       if(user){
         authUser = user;
         startAsOwner(user.uid);
-      } else if(urlCal){
-        startAsGuest(urlCal);
       } else {
         authUser = null;
         loaded = true;
@@ -494,8 +511,10 @@
         </div>
       </header>
       <div class="edit-panel" style="max-width:400px; margin:30px auto 0; text-align:center;">
-        <h3>Accede a tu calendario</h3>
-        <p style="font-size:0.85rem; color:var(--muted); margin-bottom:18px;">Inicia sesión con tu cuenta de Google para crear o entrar en tu calendario de comidas.</p>
+        <h3>${urlCal ? 'Te han compartido un calendario' : 'Accede a tu calendario'}</h3>
+        <p style="font-size:0.85rem; color:var(--muted); margin-bottom:18px;">${urlCal
+          ? 'Inicia sesión con tu cuenta de Google para abrirlo.'
+          : 'Inicia sesión con tu cuenta de Google para crear o entrar en tu calendario de comidas.'}</p>
         ${authError ? `<p style="color:#E2735A; font-size:0.82rem; margin:0 0 14px;">${escapeHtml(authError)}</p>` : ''}
         <div class="btn-row" style="justify-content:center;">
           <button class="btn primary" id="googleLoginBtn">Iniciar sesión con Google</button>
@@ -643,10 +662,7 @@
           </div>
         </div>
         ${ownerBadgeHtml}
-        ${isDemo
-          ? '<p class="demo-badge">Modo demostración: los cambios no se guardan.</p>'
-          : (!authUser ? '<p class="guest-note">Estás viendo este calendario porque alguien te ha compartido su enlace.</p>' : '')
-        }
+        ${isDemo ? '<p class="demo-badge">Modo demostración: los cambios no se guardan.</p>' : ''}
       </header>
 
       <div class="week-nav">
